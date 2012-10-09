@@ -21,6 +21,7 @@
 // THE SOFTWARE.
 
 #import "AFJSONRequestOperation.h"
+#import "JSONKit.h"
 
 static dispatch_queue_t af_json_request_operation_processing_queue;
 static dispatch_queue_t json_request_operation_processing_queue() {
@@ -66,7 +67,8 @@ static dispatch_queue_t json_request_operation_processing_queue() {
         if ([self.responseData length] == 0) {
             self.responseJSON = nil;
         } else {
-            self.responseJSON = [NSJSONSerialization JSONObjectWithData:self.responseData options:0 error:&error];
+            self.responseJSON = [[JSONDecoder decoder] objectWithData:self.responseData error:&error];
+            //self.responseJSON = [NSJSONSerialization JSONObjectWithData:self.responseData options:0 error:&error];
         }
         
         self.JSONError = error;
