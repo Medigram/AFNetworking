@@ -22,6 +22,7 @@
 
 #import "AFJSONRequestOperation.h"
 #import "JSONKit.h"
+#import "NSData+NSDataExtension.h"
 
 static dispatch_queue_t af_json_request_operation_processing_queue;
 static dispatch_queue_t json_request_operation_processing_queue() {
@@ -67,7 +68,11 @@ static dispatch_queue_t json_request_operation_processing_queue() {
         if ([self.responseData length] == 0) {
             self.responseJSON = nil;
         } else {
-            self.responseJSON = [[JSONDecoder decoder] objectWithData:self.responseData error:&error];
+            if ([[self.response MIMEType] isEqualToString:@"application/x-gzip"]) {
+                self.responseJSON = [[JSONDecoder decoder] objectWithData:[self.responseData gzipInflate] error:&error];
+            } else {
+                self.responseJSON = [[JSONDecoder decoder] objectWithData:self.responseData error:&error];
+            }
             //self.responseJSON = [NSJSONSerialization JSONObjectWithData:self.responseData options:0 error:&error];
         }
         
@@ -88,7 +93,7 @@ static dispatch_queue_t json_request_operation_processing_queue() {
 #pragma mark - AFHTTPRequestOperation
 
 + (NSSet *)acceptableContentTypes {
-    return [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript", nil];
+    return [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript", @"application/x-gzip", nil];
 }
 
 + (BOOL)canProcessRequest:(NSURLRequest *)request {
